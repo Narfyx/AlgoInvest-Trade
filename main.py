@@ -1,12 +1,15 @@
 from bruteforce import startBruteforce
+from optimized import startOptimized
 from simple_term_menu import TerminalMenu
- 
+
+from pprint import pprint
+
 import time, os
 import csv
 
-
+BUDGET = 500
 FILE_PATH = "Data/"
-DATA = []
+DATA = {}
 
 
 def lister_fichiers(chemin_dossier):
@@ -40,12 +43,20 @@ def readFile(nom_fichier):
                 if ligne == ['\ufeffname', 'price', 'profit'] or ligne == ['name', 'price', 'profit'] or ligne == []:
                     continue
                 else:
-                    DATA.append(ligne)
+                    DATA[ligne[0]] = {'cost':ligne[1], 'profit':ligne[2]}
     except FileNotFoundError:
         print(f"Le fichier '{nom_fichier}' n'a pas été trouvé.")
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
 
+def select_algo():
+        print("==================")
+        options = ["Bruteforce", "Optimized"]
+
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
+        print(f"You have selected {options[menu_entry_index]}!")
+        return menu_entry_index
 
 def main():
     files = selectData()
@@ -53,12 +64,22 @@ def main():
     for file in files:
         readFile(FILE_PATH + file)
         #print(FILE_PATH + file)
-    
-    startTime = time.time()
-    startBruteforce(DATA)
-    endTime = time.time()
+    algo_selected = select_algo()
+
+    if algo_selected == 0:
+        print("recherche en cours...")
+        startTime = time.time()
+        startBruteforce(DATA, BUDGET)
+        endTime = time.time()
+    elif algo_selected == 1:
+
+        startTime = time.time()
+        startOptimized(DATA, BUDGET)
+        endTime = time.time()
 
     executionTime = (endTime - startTime)
+
+    
     print(f"Temps d'execution = {executionTime:.5f}sec")
 
 if __name__ == "__main__":

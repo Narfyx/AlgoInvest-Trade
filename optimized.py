@@ -1,53 +1,44 @@
+import itertools
 import pandas as pd
-import time, itertools
+import time
 from pprint import pprint
 
-
-
-def calculate_total_profit_and_load(actions):
-    total_profit, total_load = 0, 0
-    for action in actions.values():
-        total_profit += float(action['profit'])
-        total_load += float(action['cost'])
-
-    return total_profit, total_load
-
-def knapsack(capacity, actions):
+def knapsack_optimized(capacity, actions):
+    # Filtrer les actions avec un coût <= 0
     filtered_actions = {key: action for key, action in actions.items() if float(action['cost']) > 0}
     del actions
-    solutions = []
-
-    # Générer toutes les combinaisons possibles d'actions sans spécifier la taille
-    all_combinations = itertools.chain.from_iterable(
-        itertools.combinations(filtered_actions.keys(), r)
-        for r in range(1, len(filtered_actions) + 1)
-    )
-
-    # Parcourir toutes les combinaisons possibles
-    for solution in all_combinations:
-        selected_actions = {key: filtered_actions[key] for key in solution}
-        total_profit, total_load = calculate_total_profit_and_load(selected_actions)
-        if total_load <= capacity:
-            solutions.append((total_profit, total_load, selected_actions))
+    # Triez les actions par rapport à leur rapport profit / coût
+    sorted_actions = sorted(filtered_actions.items(), key=lambda x: float(x[1]['profit']) / float(x[1]['cost']), reverse=True)
 
 
-    del all_combinations
-    solutions.sort(reverse=True, key=lambda x: x[0])
+    total_pay = 0
+    total_load = 0
+    selected_actions = {}
 
-    return solutions
+    for key, action in sorted_actions:
+        cost = float(action['cost'])
+        profit = float(action['profit'])
+        if total_load + cost <= capacity:
+            selected_actions[key] = action
+            total_pay += profit
+            total_load += cost
+
+    return selected_actions
 
 
 
 
 
 
-def startBruteforce(data, budget):
-
-    solutions = knapsack(budget, data)
-    solution = solutions[0]
 
 
-    df = pd.DataFrame.from_dict(solution[2], orient='index', columns=['cost', 'profit'])
+
+def startOptimized(data, budget):
+
+    selected_actions = knapsack_optimized(budget, data)
+
+
+    df = pd.DataFrame.from_dict(selected_actions, orient='index', columns=['cost', 'profit'])
 
     df['profit_2_years'] = df['profit'].astype(float) * 2
 
@@ -57,12 +48,14 @@ def startBruteforce(data, budget):
     
     percentage_budget_used = (total_cost / budget) * 100 # pourcentage budget utilisé
 
+
     print(f"Budget = {budget}")
     print("Actions achetées :")
     print(df)
     print("\nProfit sur 2 ans :", df['profit_2_years'].sum(), "%")
     print("Montant total des actions achetées par rapport au budget :", total_cost, "€")
     print("Pourcentage du budget utilisé :", percentage_budget_used, "%")
+
 
 
 if __name__ == '__main__':
@@ -96,10 +89,8 @@ if __name__ == '__main__':
     
     print("recherche en cours...")
     startTime = time.time()
-    startBruteforce(data, budget)
+    startOptimized(data, budget)
     endTime = time.time()
 
     executionTime = (endTime - startTime)
     print(f"Temps d'execution = {executionTime:.5f}sec")
-    
-    
