@@ -73,9 +73,9 @@ pip install -r requirements.txt --break-system-packages
 
 ## Usage
 
-lancer python.py
+lancer main.py
 ```bash
-python python.py
+python main.py
 ```
 ### Menu principal
 ![alt text](dataset_a_selectioner.png)
