@@ -69,18 +69,23 @@ def main():
     if algo_selected == 0:
         print("recherche en cours...")
         startTime = time.time()
-        startBruteforce(DATA, BUDGET)
+        df, total_profit, total_cost, percentage_budget_used = startBruteforce(DATA, BUDGET)
         endTime = time.time()
     elif algo_selected == 1:
 
         startTime = time.time()
-        startOptimized(DATA, BUDGET)
+        df, total_profit, total_cost, percentage_budget_used = startOptimized(DATA, BUDGET)
         endTime = time.time()
 
     executionTime = (endTime - startTime)
 
-    
-    print(f"Temps d'execution = {executionTime:.5f}sec")
+    print(f"Budget = {BUDGET}")
+    print("Actions achetées :")
+    print(df)
+    print(f"Profit total des actions : {total_profit:.2f} €")
+    print(f"Montant total des actions achetées par rapport au budget : {total_cost:.2f} €")
+    print(f"Pourcentage du budget utilisé : {percentage_budget_used:.2f} %")
+    print(f"Temps d'execution = {executionTime:.5f} sec")
 
 if __name__ == "__main__":
     main()

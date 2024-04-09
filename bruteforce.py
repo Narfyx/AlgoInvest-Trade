@@ -1,6 +1,6 @@
+import time
+import itertools
 import pandas as pd
-import time, itertools
-from pprint import pprint
 
 
 
@@ -11,6 +11,7 @@ def calculate_total_profit_and_load(actions):
         total_load += float(action['cost'])
 
     return total_profit, total_load
+
 
 def knapsack(capacity, actions):
     filtered_actions = {key: action for key, action in actions.items() if float(action['cost']) > 0}
@@ -30,43 +31,30 @@ def knapsack(capacity, actions):
         if total_load <= capacity:
             solutions.append((total_profit, total_load, selected_actions))
 
-
     del all_combinations
     solutions.sort(reverse=True, key=lambda x: x[0])
 
     return solutions
 
 
-
-
-
-
 def startBruteforce(data, budget):
-
     solutions = knapsack(budget, data)
     solution = solutions[0]
 
-
     df = pd.DataFrame.from_dict(solution[2], orient='index', columns=['cost', 'profit'])
 
-    df['profit_2_years'] = df['profit'].astype(float) * 2
-
     
-    total_cost = df['cost'].astype(float).sum() # montant total achetées
 
-    
-    percentage_budget_used = (total_cost / budget) * 100 # pourcentage budget utilisé
+    total_cost = df['cost'].astype(float).sum()  # montant total acheté
 
-    print(f"Budget = {budget}")
-    print("Actions achetées :")
-    print(df)
-    print("\nProfit sur 2 ans :", df['profit_2_years'].sum(), "%")
-    print("Montant total des actions achetées par rapport au budget :", total_cost, "€")
-    print("Pourcentage du budget utilisé :", percentage_budget_used, "%")
+    percentage_budget_used = (total_cost / budget) * 100  # pourcentage du budget utilisé
 
+    # Correction du calcul du profit total
+    total_profit = (df['cost'].astype(float) * df['profit'].astype(float) / 100).sum()
+
+    return df, total_profit, total_cost, percentage_budget_used
 
 if __name__ == '__main__':
-
     budget = 500
 
     data = {'Action-1': {'cost': '20', 'profit': '5.0'},
@@ -92,14 +80,18 @@ if __name__ == '__main__':
             'Action-8': {'cost': '26', 'profit': '11.0'},
             'Action-9': {'cost': '48', 'profit': '13.0'}}
 
-
-    
     print("recherche en cours...")
     startTime = time.time()
-    startBruteforce(data, budget)
+    df, total_profit, total_cost, percentage_budget_used = startBruteforce(data, budget)
     endTime = time.time()
 
     executionTime = (endTime - startTime)
-    print(f"Temps d'execution = {executionTime:.5f}sec")
-    
-    
+
+
+    print(f"Budget = {budget}")
+    print("Actions achetées :")
+    print(df)
+    print(f"Profit total des actions : {total_profit:.2f} €")
+    print(f"Montant total des actions achetées par rapport au budget : {total_cost:.2f} €")
+    print(f"Pourcentage du budget utilisé : {percentage_budget_used:.2f} %")
+    print(f"Temps d'execution = {executionTime:.5f} sec")
