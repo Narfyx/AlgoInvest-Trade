@@ -1,5 +1,6 @@
 from bruteforce import startBruteforce
 from optimized import startOptimized
+from optimized_v2 import startOptimizedDynamic
 from simple_term_menu import TerminalMenu
 
 from pprint import pprint
@@ -51,7 +52,7 @@ def readFile(nom_fichier):
 
 def select_algo():
         print("==================")
-        options = ["Bruteforce", "Optimized"]
+        options = ["Bruteforce", "Optimized", "Optimized_V2"]
 
         terminal_menu = TerminalMenu(options)
         menu_entry_index = terminal_menu.show()
@@ -75,6 +76,11 @@ def main():
 
         startTime = time.time()
         df, total_profit, total_cost, percentage_budget_used = startOptimized(DATA, BUDGET)
+        endTime = time.time()
+    elif algo_selected == 2:
+
+        startTime = time.time()
+        df, total_profit, total_cost, percentage_budget_used = startOptimizedDynamic(DATA, BUDGET)
         endTime = time.time()
 
     executionTime = (endTime - startTime)

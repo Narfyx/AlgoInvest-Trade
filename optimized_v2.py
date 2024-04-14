@@ -1,40 +1,64 @@
 import time
 import pandas as pd
 
+def knapSack(W, weights, values, n):
+    K = [[0 for x in range(W + 1)] for x in range(n + 1)]
+
+    for i in range(1, n + 1):
+        for w in range(1, W + 1):
+            if weights[i-1] <= w:
+                K[i][w] = max(values[i-1] + K[i-1][w-weights[i-1]], K[i-1][w])
+            else:
+                K[i][w] = K[i-1][w]
+
+    selected_items = []
+    k = W
+    for i in range(n, 0, -1):
+        if K[i][k] != K[i-1][k]:
+            selected_items.append(i-1)
+            k -= weights[i-1]
+
+    return selected_items
 
 
-def knapsack_optimized(capacity, actions):
-    # Filtrer les actions avec un coût > 0
-    filtered_actions = {key: action for key, action in actions.items() if float(action['cost']) > 0}
+def startOptimizedDynamic(data, budget):
+    scale = 100
+    filtered_actions = {
+        key: {
+            'cost': int(float(action['cost']) * scale),
+            'profit': float(action['profit'])
+        }
+        for key, action in data.items() if float(action['cost']) > 0
+    }
+
+    names, weights, values = zip(*((key, action['cost'], action['profit']) for key, action in filtered_actions.items()))
+
+    W = budget * scale
+    n = len(values)
     
-    # Triez les actions par rapport à leur rapport profit / coût
-    sorted_actions = sorted(filtered_actions.items(), key=lambda x: float(x[1]['profit']) / float(x[1]['cost']), reverse=True)
-
-    total_pay = 0
-    total_load = 0
-    selected_actions = {}
-
-    for key, action in sorted_actions:
-        cost = float(action['cost'])
-        profit = float(action['profit'])
-        if total_load + cost <= capacity:
-            selected_actions[key] = action
-            total_pay += profit
-            total_load += cost
-
-    return selected_actions
-
-def startOptimized(data, budget):
-    selected_actions = knapsack_optimized(budget, data)
-    df = pd.DataFrame.from_dict(selected_actions, orient='index', columns=['cost', 'profit'])
+    selected_indices = knapSack(W, weights, values, n)
     
-    total_cost = df['cost'].astype(float).sum() # montant total acheté
-    percentage_budget_used = (total_cost / budget) * 100 # pourcentage du budget utilisé
+    # Ajustement de la création du DataFrame pour inclure la mise à l'échelle correcte des coûts
+    selected_actions = {
+        names[i]: {
+            'cost': filtered_actions[names[i]]['cost'] / scale,  # Coûts ajustés
+            'profit': filtered_actions[names[i]]['profit']
+        }
+        for i in selected_indices
+    }
+    df = pd.DataFrame.from_dict(selected_actions, orient='index')
 
-    total_profit = (df['cost'].astype(float) * df['profit'].astype(float) / 100).sum()
-
+    total_cost = df['cost'].sum()
+    percentage_budget_used = (total_cost / budget) * 100
+    total_profit = (df['cost'] * df['profit']).sum() / 100
 
     return df, total_profit, total_cost, percentage_budget_used
+
+
+
+
+
+
 
 if __name__ == '__main__':
     budget = 500
@@ -65,7 +89,7 @@ if __name__ == '__main__':
     
     print("Recherche en cours...")
     startTime = time.time()
-    df, total_profit, total_cost, percentage_budget_used = startOptimized(data, budget)
+    df, total_profit, total_cost, percentage_budget_used = startOptimizedDynamic(data, budget)
     endTime = time.time()
 
     executionTime = (endTime - startTime)
@@ -77,3 +101,4 @@ if __name__ == '__main__':
     print(f"Montant total des actions achetées par rapport au budget : {total_cost:.2f} €")
     print(f"Pourcentage du budget utilisé : {percentage_budget_used:.2f} %")
     print(f"Temps d'execution = {executionTime:.5f} sec")
+
