@@ -2,7 +2,7 @@ import time
 import pandas as pd
 
 def knapSack(W, weights, values, n):
-    K = [[0 for x in range(W + 1)] for x in range(n + 1)]
+    K = [[0] * (W + 1) for _ in range(n + 1)]
 
     for i in range(1, n + 1):
         for w in range(1, W + 1):
